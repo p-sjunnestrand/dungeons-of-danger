@@ -50,7 +50,7 @@ function runGame () {
         if(room === 1) {
             roomsRemaining--
             console.log("remaining: ", roomsRemaining);
-            console.log("i,j: ", i, j)
+            // console.log("i,j: ", i, j)
             return "r";
         } 
         return 0 ;
@@ -118,41 +118,7 @@ function runGame () {
         }
     }
 
-//The new improved room generation
-    function newGenerateRooms () {
-        while (roomsRemaining > 0) {
-            let legalAreas = 0;
-            if(startingRow === 0) {
-                //Continue here!
-            }
-            // switch (startingRow) {
-            //     case 0:
-            //         if(dungeonMap[startingRow + 1][startingCell] === "e" || dungeonMap[playerRow + 1][playerColumn] === "r" || dungeonMap[playerRow + 1][playerColumn] === "s") {doors.push("south")}
-            //         break;
-            //     case possibleCells - 1:
-            //         if(dungeonMap[startingRow - 1][startingCell] === "e" || dungeonMap[playerRow - 1][playerColumn] === "r" || dungeonMap[playerRow - 1][playerColumn] === "s") {doors.push("north")}
-            //         break;
-            //     default: {
-            //         if(dungeonMap[startingRow - 1][startingCell] === "e" || dungeonMap[playerRow - 1][playerColumn] === "r" || dungeonMap[playerRow - 1][playerColumn] === "s") {doors.push("north")}
-            //         if(dungeonMap[startingRow + 1][startingCell] === "e" || dungeonMap[playerRow + 1][playerColumn] === "r" || dungeonMap[playerRow + 1][playerColumn] === "s") {doors.push("south")}
-            //         break;
-            //     }
-            // }
-            // switch (playerColumn) {
-            //     case 0:
-            //         if(dungeonMap[startingRow][startingCell + 1] === "e" || dungeonMap[playerRow][playerColumn + 1] === "r" || dungeonMap[playerRow][playerColumn + 1] === "s") {doors.push("east")}
-            //         break;
-            //     case possibleCells - 1:
-            //         if(dungeonMap[startingRow][startingCell - 1] === "e" || dungeonMap[playerRow][playerColumn - 1] === "r" || dungeonMap[playerRow][playerColumn - 1] === "s") {doors.push("west")}
-            //         break;
-            //     default: {
-            //         if(dungeonMap[startingRow][startingCell + 1] === "e" || dungeonMap[playerRow][playerColumn + 1] === "r" || dungeonMap[playerRow][playerColumn + 1] === "s") {doors.push("east")}
-            //         if(dungeonMap[startingRow][startingCell - 1] === "e" || dungeonMap[playerRow][playerColumn - 1] === "r" || dungeonMap[playerRow][playerColumn - 1] === "s") {doors.push("west")}
-            //         break;
-            //     }
-            // }
-        }
-    }
+
 
     function generateStartingPoint () {
         startingRow = getRandomInt(3);
@@ -286,17 +252,66 @@ function runGame () {
             console.log(doors);
             document.querySelector('.text-box').innerHTML = generateRoomDescription();
         }
+        //The new improved room generation
+    function newGenerateRooms () {
+        const validRooms = /[ers]/;
+        let newDungeonMap = Array(possibleCells).fill().map(() => Array(possibleCells).fill(0));
+        console.log("newDungeon: ", newDungeonMap)
+        newDungeonMap[startingRow][startingCell] = "e";
+        roomsRemaining = possibleCells;
+        console.log("rooms remaining: ", roomsRemaining);
+        let currentRow = startingRow;
+        let currentColumn = startingCell;
+        let rooms = [];
+        
+        while (roomsRemaining > 0) {
+            console.log("current room: ", currentRow, currentColumn)
+            let legalAreas = [];
+            if(currentRow === 0) {
+                //Continue here!
+                if(newDungeonMap[currentRow + 1][currentColumn] !== "r" && newDungeonMap[currentRow + 1][currentColumn] !== "e" && newDungeonMap[currentRow + 1][currentColumn] !== "s") legalAreas.push([currentRow + 1, currentColumn]);
+            }
+            else if(currentRow === possibleCells - 1) {
+                if(newDungeonMap[currentRow - 1][currentColumn] !== "r" && newDungeonMap[currentRow - 1][currentColumn] !== "e" && newDungeonMap[currentRow - 1][currentColumn] !== "s") legalAreas.push([currentRow - 1, currentColumn])
+            }
+            else {
+                if(newDungeonMap[currentRow + 1][currentColumn] !== "r" && newDungeonMap[currentRow + 1][currentColumn] !== "e" && newDungeonMap[currentRow + 1][currentColumn] !== "s") legalAreas.push([currentRow + 1, currentColumn]);
+                if(newDungeonMap[currentRow - 1][currentColumn] !== "r" && newDungeonMap[currentRow - 1][currentColumn] !== "e" && newDungeonMap[currentRow - 1][currentColumn] !== "s") legalAreas.push([currentRow - 1, currentColumn]);
+            }
+            if(currentColumn === 0) {
+                if(newDungeonMap[currentRow][currentColumn + 1] !== "r" && newDungeonMap[currentRow][currentColumn + 1] !== "e" && newDungeonMap[currentRow][currentColumn + 1] !== "s") legalAreas.push([currentRow, currentColumn + 1]);
+            }
+            else if(currentColumn === possibleCells - 1) {
+                if(newDungeonMap[currentRow][currentColumn - 1] !== "r" && newDungeonMap[currentRow][currentColumn - 1] !== "e" && newDungeonMap[currentRow][currentColumn - 1] !== "s") legalAreas.push([currentRow, currentColumn - 1]);
+            } 
+            else {
+                if(newDungeonMap[currentRow][currentColumn + 1] !== "r" && newDungeonMap[currentRow][currentColumn + 1] !== "e" && newDungeonMap[currentRow][currentColumn + 1] !== "s") legalAreas.push([currentRow, currentColumn + 1]);
+                if(newDungeonMap[currentRow][currentColumn - 1] !== "r" && newDungeonMap[currentRow][currentColumn - 1] !== "e" && newDungeonMap[currentRow][currentColumn - 1] !== "s") legalAreas.push([currentRow, currentColumn - 1]);
+            }
+            console.log("legalAreas: ", legalAreas);
+
+            const nextRoom = legalAreas[getRandomInt(legalAreas.length)];
+            console.log("nextRoom: ", nextRoom);
+            newDungeonMap[nextRoom[0]][nextRoom[1]] = "r";
+            roomsRemaining--;
+            currentRow = nextRoom[0];
+            currentColumn = nextRoom[1];
+            //Continue by creating objects out of each room. Add a door key with values referencing all adjacent rooms. Create array that contains all rooms in dungeon.
+        }
+        console.log("newDungeonMap: ", newDungeonMap)
+    }
         generateStartingPoint();
         
         console.log("length: ", dungeonMap.length - 1);
     
         console.log(dungeonMap[startingRow][startingCell]);
         
-        generateRooms();
+        // generateRooms();
+        newGenerateRooms();
         
-        generateEndingPoint();
+        // generateEndingPoint();
 
-        generateRoom();
+        // generateRoom();
     }
     generateDungeon();
 }
