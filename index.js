@@ -24,6 +24,7 @@ playButton.addEventListener('click', () => {
 });
 
 
+
 function runGame () {
 
     //Dungeons vars
@@ -56,90 +57,7 @@ function runGame () {
         return 0 ;
     }
 
-// This function is prone to hanging and is also very slow. Should be rewritten to start with the entrance point,
-// check how many valid map areas surounds it and pick a random spot to create a new room. Then it moves on to the next room and does the same thing
-// until there are no more rooms left. This function could also be tweaked to favor 'hallways' or 'clumps'. The current function favors 'clumps'
-    function generateRooms() { 
-        while (roomsRemaining > 0) {
-            console.log(roomsRemaining)
-            for(let i = 0; i < dungeonMap.length; i++) {
-                for(let j = 0; j < dungeonMap[i].length; j++) {
-                    if(dungeonMap[i][j] === "e") continue;
-                    if(dungeonMap[i][j] === "r") continue;
-                    switch (j) {
-                        case 0:
-                            if(dungeonMap[i][j + 1] === "e" || dungeonMap[i][j + 1] === "r") {
-                                const roomPosition = ramdomizeRoomPosition(i, j)
-                                if(roomPosition === "r")dungeonMap[i][j] = roomPosition;
-                            };
-                            break;
-                        case 1:
-                            if(dungeonMap[i][j - 1] === "e" || dungeonMap[i][j - 1] === "r") {
-                                const roomPosition = ramdomizeRoomPosition(i, j)
-                                if(roomPosition === "r")dungeonMap[i][j] = roomPosition;
-                            };
-                            if(dungeonMap[i][j + 1] === "e" || dungeonMap[i][j + 1] === "r") {
-                                const roomPosition = ramdomizeRoomPosition(i, j)
-                                if(roomPosition === "r")dungeonMap[i][j] = roomPosition;
-                            };
-                            break;
-                        case 2:
-                            if(dungeonMap[i][j - 1] === "e" || dungeonMap[i][j - 1] === "r") {
-                                const roomPosition = ramdomizeRoomPosition(i, j)
-                                if(roomPosition === "r")dungeonMap[i][j] = roomPosition;
-                            };
-                            break;
-                    }
-                    switch (i) {
-                        case 0:
-                            if(dungeonMap[i + 1][j] === "e" || dungeonMap[i + 1][j] === "r") {
-                                const roomPosition = ramdomizeRoomPosition(i, j)
-                                if(roomPosition === "r")dungeonMap[i][j] = roomPosition;
-                            };
-                            break;
-                        case 1:
-                            if(dungeonMap[i + 1][j] === "e" || dungeonMap[i + 1][j] === "r") {
-                                const roomPosition = ramdomizeRoomPosition(i, j)
-                                if(roomPosition === "r")dungeonMap[i][j] = roomPosition;
-                            };
-                            if(dungeonMap[i - 1][j] === "e" || dungeonMap[i - 1][j] === "r") {
-                                const roomPosition = ramdomizeRoomPosition(i, j)
-                                if(roomPosition === "r")dungeonMap[i][j] = roomPosition;
-                            };
-                            break;
-                        case 2:
-                            if(dungeonMap[i - 1][j] === "e" || dungeonMap[i - 1][j] === "r") {
-                                const roomPosition = ramdomizeRoomPosition(i, j)
-                                if(roomPosition === "r")dungeonMap[i][j] = roomPosition;
-                            };
-                    }
-                }
-            }
-        }
-    }
-
-
-
-    function generateStartingPoint () {
-        startingRow = getRandomInt(3);
-        do {
-            startingCell = getRandomInt(3);
-            console.log("startingRow: ", startingRow);
-            console.log("startingCell: ", startingCell);
-        } while ((startingRow != 0 && startingRow != dungeonMap.length -1) && (startingCell != 0 && startingCell != dungeonMap[0].length - 1));
     
-        dungeonMap[startingRow][startingCell] = "e";
-        playerPosition.push(startingRow, startingCell);
-    }
-
-    function generateEndingPoint() {
-        do {
-            endingRow = getRandomInt(2);
-            endingCell = getRandomInt(2);
-        } while (dungeonMap[endingRow][endingCell] != "r");
-        dungeonMap[endingRow][endingCell] = "s"
-        console.log(dungeonMap)
-    }
     
     
 
@@ -148,6 +66,41 @@ function runGame () {
         const possibleCells = currentLevel + 3;
         dungeonMap = Array(possibleCells).fill().map(() => Array(possibleCells).fill(0));
         roomsRemaining = possibleCells;
+        let rooms = [];
+        let roomId = 0;
+
+        function generateStartingPoint () {
+            startingRow = getRandomInt(3);
+            do {
+                startingCell = getRandomInt(3);
+                console.log("startingRow: ", startingRow);
+                console.log("startingCell: ", startingCell);
+            } while ((startingRow != 0 && startingRow != dungeonMap.length -1) && (startingCell != 0 && startingCell != dungeonMap[0].length - 1));
+        
+            dungeonMap[startingRow][startingCell] = "e";
+
+            const newRoom = {
+                id: ++roomId,
+                row: startingRow,
+                column: startingCell,
+                doors: [],
+                type: "entrance"
+            }
+
+            rooms.push(newRoom)
+            playerPosition.push(startingRow, startingCell);
+        }
+
+        function generateEndingPoint() {
+            do {
+                endingRow = getRandomInt(possibleCells);
+                endingCell = getRandomInt(possibleCells);
+                console.log(dungeonMap[endingRow][endingCell])
+            } while (dungeonMap[endingRow][endingCell] === "r" || dungeonMap[endingRow][endingCell] === "e");
+            dungeonMap[endingRow][endingCell] = "s";
+            console.log(endingRow, endingCell);
+            console.log(dungeonMap);
+        }
 
         function generateRoom () {
             doors = [];
@@ -253,52 +206,69 @@ function runGame () {
             document.querySelector('.text-box').innerHTML = generateRoomDescription();
         }
         //The new improved room generation
-    function newGenerateRooms () {
+    function generateRooms () {
         const validRooms = /[ers]/;
-        let newDungeonMap = Array(possibleCells).fill().map(() => Array(possibleCells).fill(0));
-        console.log("newDungeon: ", newDungeonMap)
-        newDungeonMap[startingRow][startingCell] = "e";
+        // let newDungeonMap = Array(possibleCells).fill().map(() => Array(possibleCells).fill(0));
+        // console.log("newDungeon: ", newDungeonMap)
+        dungeonMap[startingRow][startingCell] = "e";
         roomsRemaining = possibleCells;
         console.log("rooms remaining: ", roomsRemaining);
         let currentRow = startingRow;
         let currentColumn = startingCell;
-        let rooms = [];
+        
         
         while (roomsRemaining > 0) {
             console.log("current room: ", currentRow, currentColumn)
             let legalAreas = [];
             if(currentRow === 0) {
-                //Continue here!
-                if(newDungeonMap[currentRow + 1][currentColumn] !== "r" && newDungeonMap[currentRow + 1][currentColumn] !== "e" && newDungeonMap[currentRow + 1][currentColumn] !== "s") legalAreas.push([currentRow + 1, currentColumn]);
+                //There must be a way to do this with regex!
+                if(dungeonMap[currentRow + 1][currentColumn] !== "r" && dungeonMap[currentRow + 1][currentColumn] !== "e" && dungeonMap[currentRow + 1][currentColumn] !== "s") legalAreas.push([currentRow + 1, currentColumn]);
             }
             else if(currentRow === possibleCells - 1) {
-                if(newDungeonMap[currentRow - 1][currentColumn] !== "r" && newDungeonMap[currentRow - 1][currentColumn] !== "e" && newDungeonMap[currentRow - 1][currentColumn] !== "s") legalAreas.push([currentRow - 1, currentColumn])
+                if(dungeonMap[currentRow - 1][currentColumn] !== "r" && dungeonMap[currentRow - 1][currentColumn] !== "e" && dungeonMap[currentRow - 1][currentColumn] !== "s") legalAreas.push([currentRow - 1, currentColumn])
             }
             else {
-                if(newDungeonMap[currentRow + 1][currentColumn] !== "r" && newDungeonMap[currentRow + 1][currentColumn] !== "e" && newDungeonMap[currentRow + 1][currentColumn] !== "s") legalAreas.push([currentRow + 1, currentColumn]);
-                if(newDungeonMap[currentRow - 1][currentColumn] !== "r" && newDungeonMap[currentRow - 1][currentColumn] !== "e" && newDungeonMap[currentRow - 1][currentColumn] !== "s") legalAreas.push([currentRow - 1, currentColumn]);
+                if(dungeonMap[currentRow + 1][currentColumn] !== "r" && dungeonMap[currentRow + 1][currentColumn] !== "e" && dungeonMap[currentRow + 1][currentColumn] !== "s") legalAreas.push([currentRow + 1, currentColumn]);
+                if(dungeonMap[currentRow - 1][currentColumn] !== "r" && dungeonMap[currentRow - 1][currentColumn] !== "e" && dungeonMap[currentRow - 1][currentColumn] !== "s") legalAreas.push([currentRow - 1, currentColumn]);
             }
             if(currentColumn === 0) {
-                if(newDungeonMap[currentRow][currentColumn + 1] !== "r" && newDungeonMap[currentRow][currentColumn + 1] !== "e" && newDungeonMap[currentRow][currentColumn + 1] !== "s") legalAreas.push([currentRow, currentColumn + 1]);
+                if(dungeonMap[currentRow][currentColumn + 1] !== "r" && dungeonMap[currentRow][currentColumn + 1] !== "e" && dungeonMap[currentRow][currentColumn + 1] !== "s") legalAreas.push([currentRow, currentColumn + 1]);
             }
             else if(currentColumn === possibleCells - 1) {
-                if(newDungeonMap[currentRow][currentColumn - 1] !== "r" && newDungeonMap[currentRow][currentColumn - 1] !== "e" && newDungeonMap[currentRow][currentColumn - 1] !== "s") legalAreas.push([currentRow, currentColumn - 1]);
+                if(dungeonMap[currentRow][currentColumn - 1] !== "r" && dungeonMap[currentRow][currentColumn - 1] !== "e" && dungeonMap[currentRow][currentColumn - 1] !== "s") legalAreas.push([currentRow, currentColumn - 1]);
             } 
             else {
-                if(newDungeonMap[currentRow][currentColumn + 1] !== "r" && newDungeonMap[currentRow][currentColumn + 1] !== "e" && newDungeonMap[currentRow][currentColumn + 1] !== "s") legalAreas.push([currentRow, currentColumn + 1]);
-                if(newDungeonMap[currentRow][currentColumn - 1] !== "r" && newDungeonMap[currentRow][currentColumn - 1] !== "e" && newDungeonMap[currentRow][currentColumn - 1] !== "s") legalAreas.push([currentRow, currentColumn - 1]);
+                if(dungeonMap[currentRow][currentColumn + 1] !== "r" && dungeonMap[currentRow][currentColumn + 1] !== "e" && dungeonMap[currentRow][currentColumn + 1] !== "s") legalAreas.push([currentRow, currentColumn + 1]);
+                if(dungeonMap[currentRow][currentColumn - 1] !== "r" && dungeonMap[currentRow][currentColumn - 1] !== "e" && dungeonMap[currentRow][currentColumn - 1] !== "s") legalAreas.push([currentRow, currentColumn - 1]);
             }
             console.log("legalAreas: ", legalAreas);
 
             const nextRoom = legalAreas[getRandomInt(legalAreas.length)];
             console.log("nextRoom: ", nextRoom);
-            newDungeonMap[nextRoom[0]][nextRoom[1]] = "r";
+            dungeonMap[nextRoom[0]][nextRoom[1]] = "r";
+
+            const newRoom = {
+                id: ++roomId,
+                row: nextRoom[0],
+                column: nextRoom[1],
+                doors: [],
+                type: "room"
+            }
+
+            rooms.push(newRoom);
             roomsRemaining--;
             currentRow = nextRoom[0];
             currentColumn = nextRoom[1];
             //Continue by creating objects out of each room. Add a door key with values referencing all adjacent rooms. Create array that contains all rooms in dungeon.
         }
-        console.log("newDungeonMap: ", newDungeonMap)
+        console.log("newDungeonMap: ", dungeonMap)
+        
+        for(let i = 0; i < rooms.length; i++) {
+            const roomDoors = rooms.filter(room => (room.row === rooms[i].row + 1 && room.column === rooms[i].column) || (room.row === rooms[i].row - 1 && room.column === rooms[i].column) || (room.row === rooms[i].row && room.column === rooms[i].column + 1) || (room.row === rooms[i].row && room.column === rooms[i].column - 1)).map(roomObj => [roomObj.row, roomObj.column]);
+            rooms[i].doors = roomDoors;
+        }
+        
+        console.log("rooms: ", rooms);
     }
         generateStartingPoint();
         
@@ -306,10 +276,9 @@ function runGame () {
     
         console.log(dungeonMap[startingRow][startingCell]);
         
-        // generateRooms();
-        newGenerateRooms();
+        generateRooms();
         
-        // generateEndingPoint();
+        generateEndingPoint();
 
         // generateRoom();
     }
@@ -326,4 +295,6 @@ function runGame () {
 // - Light sources
 // - Decorations
 // - Special items
+
+//[0,0][0,1][0,2]
 
