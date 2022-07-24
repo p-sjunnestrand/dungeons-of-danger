@@ -11,6 +11,13 @@ playButton.addEventListener('click', () => {
     textBox.classList.add('text-box');
 
     gameScreen.appendChild(textBox);
+    const orientationBox = document.createElement('div');
+    gameScreen.appendChild(orientationBox);
+    orientationBox.classList.add('orientation-box');
+
+    const mapBox = document.createElement('div');
+    mapBox.classList.add('map-box');
+    gameScreen.appendChild(mapBox);
     runGame();
 
     // const roomDescription = 
@@ -27,7 +34,7 @@ playButton.addEventListener('click', () => {
 
 function runGame () {
 
-    //Dungeons vars
+    //Dungeon vars
     let currentLevel = 0;
     let roomsRemaining = 0;
     let dungeonMap;
@@ -39,6 +46,7 @@ function runGame () {
 
     //Player vars
     let playerPosition = [];
+    let currentRoom;
     console.log("player: ", playerPosition)
 
     function getRandomInt(max) {
@@ -250,17 +258,30 @@ function runGame () {
         }
 
         function displayRoom () {
-            const orientationBox = document.createElement('div');
-            orientationBox.classList.add('orientation-box');
-
+            const orientationBox = document.querySelector('.orientation-box');
+            orientationBox.innerHTML = '';
             for(let i = 0; i < currentRoomDoors.length; i++) {
                 const directionalButton = document.createElement('button');
                 directionalButton.innerText = currentRoomDoors[i];
                 directionalButton.classList.add('directional-button');
                 directionalButton.id = `button-${currentRoomDoors[i]}`
                 orientationBox.appendChild(directionalButton);
+
+                directionalButton.addEventListener('click', () => {
+                    playerPosition = [currentRoom.doors[i][0], currentRoom.doors[i][1]];
+                    currentRoomDoors = [];
+                    document.querySelector('.text-box').innerHTML = generateRoomDescription();
+
+                    displayRoom();
+                });
             }
-            gameScreen.appendChild(orientationBox);
+            const mapBox = document.querySelector('.map-box');
+            for(let i = 0; i < dungeonMap.length; i++) {
+                for(let j = 0; j < dungeonMap[i].length; j++) {
+                    mapBox.appendChild(document.createElement('div'));
+
+                }
+            }
         }
         generateStartingPoint();
         
@@ -273,14 +294,12 @@ function runGame () {
         generateEndingPoint();
 
         generateDoors();
-        // getCurrentRoomDoors();
+        // generateRoom();
         document.querySelector('.text-box').innerHTML = generateRoomDescription();
 
         displayRoom();
-        // generateRoomDescription();
         console.log("rooms: ", rooms);
 
-        // generateRoom();
     }
     generateDungeon();
 }
