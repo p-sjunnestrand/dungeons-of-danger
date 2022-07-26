@@ -60,6 +60,14 @@ function runGame () {
         roomsRemaining = possibleCells;
         let rooms = [];
         let roomId = 0;
+        const mapBox = document.querySelector('.map-box');
+            for(let i = 0; i < dungeonMap.length; i++) {
+                for(let j = 0; j < dungeonMap[i].length; j++) {
+                    const mapArea = document.createElement('div')
+                    mapArea.id = `area-${i}${j}`
+                    mapBox.appendChild(mapArea);
+                }
+            }
 
         function generateStartingPoint () {
             startingRow = getRandomInt(3);
@@ -84,7 +92,7 @@ function runGame () {
             playerPosition.push(startingRow, startingCell);
         }
 
-        function generateEndingPoint() {
+        function generateEndingPoint() { //This function will take rooms with no doors. Needs to be changed! Easiest way to do it is to increase room count by one and then change it to stairs.
             do {
                 endingRow = getRandomInt(possibleCells);
                 endingCell = getRandomInt(possibleCells);
@@ -201,7 +209,7 @@ function runGame () {
             }
             
         function generateRooms () {
-            dungeonMap[startingRow][startingCell] = "e";
+            // dungeonMap[startingRow][startingCell] = "e";
             roomsRemaining = possibleCells;
             console.log("rooms remaining: ", roomsRemaining);
             let currentRow = startingRow;
@@ -260,14 +268,33 @@ function runGame () {
         function displayRoom () {
             const orientationBox = document.querySelector('.orientation-box');
             orientationBox.innerHTML = '';
+            
+            const currentMapRoom = document.getElementById(`area-${currentRoom.row}${currentRoom.column}`);
+            console.log("currentMapRoom: ", currentMapRoom);
+            currentMapRoom.classList.add('current-room', 'visited-room');
+            for(let i = 0; i < currentRoom.doors.length; i++) {
+                const adjacentRoom = document.getElementById(`area-${currentRoom.doors[i][0]}${currentRoom.doors[i][1]}`);
+                adjacentRoom.classList.add('adjacent-room');
+                switch (currentRoom.type) {
+                    case "entrance":
+                        currentMapRoom.innerText = "E";
+                        break;
+                    case "stairs":
+                        currentMapRoom.innerText = "S"
+                }
+            }
+
             for(let i = 0; i < currentRoomDoors.length; i++) {
                 const directionalButton = document.createElement('button');
-                directionalButton.innerText = currentRoomDoors[i];
+                directionalButton.innerText = currentRoomDoors[i][0].toUpperCase();
                 directionalButton.classList.add('directional-button');
                 directionalButton.id = `button-${currentRoomDoors[i]}`
                 orientationBox.appendChild(directionalButton);
 
+                
+
                 directionalButton.addEventListener('click', () => {
+                    currentMapRoom.classList.remove('current-room')
                     playerPosition = [currentRoom.doors[i][0], currentRoom.doors[i][1]];
                     currentRoomDoors = [];
                     document.querySelector('.text-box').innerHTML = generateRoomDescription();
@@ -275,13 +302,16 @@ function runGame () {
                     displayRoom();
                 });
             }
-            const mapBox = document.querySelector('.map-box');
-            for(let i = 0; i < dungeonMap.length; i++) {
-                for(let j = 0; j < dungeonMap[i].length; j++) {
-                    mapBox.appendChild(document.createElement('div'));
+            // const mapBox = document.querySelector('.map-box');
+            // for(let i = 0; i < dungeonMap.length; i++) {
+            //     for(let j = 0; j < dungeonMap[i].length; j++) {
+            //         const mapArea = document.createElement('div')
+            //         mapArea.id = `area-${i}${j}`
+            //         mapBox.appendChild(mapArea);
+            //     }
+            // }
 
-                }
-            }
+            
         }
         generateStartingPoint();
         
@@ -296,6 +326,7 @@ function runGame () {
         generateDoors();
         // generateRoom();
         document.querySelector('.text-box').innerHTML = generateRoomDescription();
+        
 
         displayRoom();
         console.log("rooms: ", rooms);
