@@ -1,3 +1,6 @@
+import {containers} from './containers.mjs'
+
+
 const gameScreen = document.getElementById('gameScreen');
 
 const playButton = document.getElementById("playButton");
@@ -43,6 +46,7 @@ function runGame () {
     let endingRow;
     let endingCell;
     let currentRoomDoors = [];
+    
 
     //Player vars
     let playerPosition = [];
@@ -165,8 +169,46 @@ function runGame () {
                 return `are ${nodInText} doors`;
 
 
+            };
+
+            function addNullValue (list, probabilityOfNull) { //With this function, the higest probability of null is 50%. It doesn't work though
+                let listWithNull = [...list];
+                const totalListWeight = getTotalWeight(list);
+                // const totalListWeight = 100
+                console.log(totalListWeight);
+                listWithNull.push({name: null, weight: totalListWeight * (probabilityOfNull/50)});
+                return listWithNull;
+            };
+
+            function getTotalWeight (list) {
+                let totalWeight = 0;
+                for(let i = 0; i < list.length; i++) {
+                    console.log(list[i].weight)
+                    totalWeight += list[i].weight;
+                }
+                return totalWeight;
+            };
+
+            function generateItemsFromList (list) {
+                // let totalWeight = 0;
+                // for(let i = 0; i < list.length; i++) {
+                //     console.log(list[i].weight)
+                //     totalWeight += list[i].weight;
+                // }
+                // console.log(totalWeight);
+                let weightLimit = 1;
+                const generatedList = list.map(item => {
+                    const modifiedItem = {...item, spawnRngMin: weightLimit, spawnRngMax: weightLimit + item.weight - 1};
+                    weightLimit += item.weight;
+                    return modifiedItem;
+                });
+                console.log(generatedList);
+                return generatedList;
             }
         
+            function spawnRandomItems (list, areas = null) {
+                //Continue here!
+            }
             function generateRoomDescription () {
                 currentRoom = rooms.find(room => room.row === playerPosition[0] && room.column === playerPosition[1]);
                 console.log(currentRoom.doors);
@@ -301,17 +343,7 @@ function runGame () {
 
                     displayRoom();
                 });
-            }
-            // const mapBox = document.querySelector('.map-box');
-            // for(let i = 0; i < dungeonMap.length; i++) {
-            //     for(let j = 0; j < dungeonMap[i].length; j++) {
-            //         const mapArea = document.createElement('div')
-            //         mapArea.id = `area-${i}${j}`
-            //         mapBox.appendChild(mapArea);
-            //     }
-            // }
-
-            
+            }  
         }
         generateStartingPoint();
         
@@ -330,6 +362,8 @@ function runGame () {
 
         displayRoom();
         console.log("rooms: ", rooms);
+        // generateItemsFromList(addNullValue(containers, 25));
+        generateItemsFromList(containers);
 
     }
     generateDungeon();
