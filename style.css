@@ -56,20 +56,20 @@ h1 {
     grid-template-rows: repeat(3, 1fr);
     grid-template-areas: 
         ". N ."
-        "W . E"
+        "W C E"
         ". S .";
 }
 .map-box {
     width: 100px;
     aspect-ratio: 1/1;
-    border: 1px solid black;
+    /* border: 1px solid black; */
     display: flex;
     flex-wrap: wrap;
 }
 .map-box div {
     box-sizing: border-box;
     /* border: 1px solid red; */
-    width: calc(100%/3);
+    width: calc(100%/3); /*fix this with custom properties that are changed with JS!*/
     aspect-ratio: 1/1;
     display: flex;
     flex-direction: column;
@@ -97,4 +97,12 @@ h1 {
 }
 #button-west {
     grid-area: W;
+}
+.compassRose {
+    grid-area: C;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
 }

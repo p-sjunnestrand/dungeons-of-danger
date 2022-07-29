@@ -53,9 +53,18 @@ function runGame () {
     let currentRoom;
     console.log("player: ", playerPosition)
 
-    function getRandomInt(max) {
-        return Math.floor(Math.random() * max);
+    // function getRandomInt(max) {
+    //     return Math.floor(Math.random() * max);
+    // }
+    // function getRandomArbitrary(max, min = 0) {
+    //     return Math.random() * (max - min) + min;
+    // }
+    function getRandomInt(max, min = 0) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min) + min); //make it inclusive by adding + 1 to (max - min)
     }
+      
 
     function generateDungeon () {
     
@@ -189,7 +198,7 @@ function runGame () {
                 return totalWeight;
             };
 
-            function generateItemsFromList (list) {
+            function addRngRangeToList (list) {
                 // let totalWeight = 0;
                 // for(let i = 0; i < list.length; i++) {
                 //     console.log(list[i].weight)
@@ -202,13 +211,51 @@ function runGame () {
                     weightLimit += item.weight;
                     return modifiedItem;
                 });
-                console.log(generatedList);
+                // console.log(generatedList);
                 return generatedList;
-            }
+            };
         
-            function spawnRandomItems (list, areas = null) {
-                //Continue here!
+            function generateItemFromList (list, weight) {
+                const randomInt = getRandomInt(weight, 1);
+                console.log(randomInt);
+                return list.find(item => item.spawnRngMin <= randomInt && item.spawnRngMax >= randomInt);
+            };
+
+            function spawnContainers (dungeonRooms, list) {
+                // let containersRemaining = currentLevel + 3;
+                const listWeight = getTotalWeight(list);
+                
+                for(let i = 0; i < dungeonRooms.length; i++) {
+                    console.log(dungeonRooms[i])
+                    let currentRoomContainers = [];
+                    for(let j = 0; j < 3; j++) {
+                        // if(containersRemaining > 0) {
+                            const generatedContainer = generateItemFromList(list, listWeight);
+                            if(generatedContainer.name !== null) {
+                                currentRoomContainers.push(generatedContainer);
+                                // containersRemaining--;
+                                // console.log("containersRemaining: ", containersRemaining);
+
+                            };
+                        // };
+                    };
+                    dungeonRooms[i].containers = currentRoomContainers;
+                };
+            };
+
+            function getContainerDescriptions (containers) {
+                if(containers.length === 1) return `is a ${containers[0].size} ${containers[0].name}`;
+                if(containers[0].name === containers[1].name) {
+                    if(containers[0].size === containers[1].size) return `are two ${containers[0].size} ${containers[0].name}${containers[0].plural ? containers[0].plural : "s"}`;
+                    return `is a ${containers[0].size} and a ${containers[1].size} ${containers[0].name}`
+                };
+                return `is a ${containers[0].size} ${containers[0].name} and a ${containers[1].size} ${containers[1].name}`;
             }
+
+            function getContainerNames (container) {
+                return 
+            }
+
             function generateRoomDescription () {
                 currentRoom = rooms.find(room => room.row === playerPosition[0] && room.column === playerPosition[1]);
                 console.log(currentRoom.doors);
@@ -243,6 +290,10 @@ function runGame () {
                         roomDescription += `one to the ${currentRoomDoors[i]}, `;
                     }
                 }
+                const numberOfContainers = currentRoom.containers.length;
+                if(numberOfContainers > 0) {
+                    roomDescription += `</br>There ${getContainerDescriptions(currentRoom.containers)} in the room.`;
+                }
                 if(currentRoom.type === "stairs") {
                     roomDescription += `</br>There are a set of stairs in the room, leading to the next level.`;
                 }
@@ -256,6 +307,7 @@ function runGame () {
             console.log("rooms remaining: ", roomsRemaining);
             let currentRow = startingRow;
             let currentColumn = startingCell;
+            
             
             
             while (roomsRemaining > 0) {
@@ -294,7 +346,8 @@ function runGame () {
                     column: nextRoom[1],
                     doors: [],
                     type: "room",
-                    description: [getRoomSize()]
+                    description: [getRoomSize()],
+                    // containers: []
                 }
 
                 rooms.push(newRoom);
@@ -302,14 +355,28 @@ function runGame () {
                 currentRow = nextRoom[0];
                 currentColumn = nextRoom[1];
             }
-            console.log("newDungeonMap: ", dungeonMap)
+            console.log("newDungeonMap: ", dungeonMap);
             
+            // function spawnContainers(list) {
+            //     const returnedContainers = [];
+            //     for(let i = 0; i < 3; i++) {
+            //         if(containersRemaining > 0) {
+            //             const generatedContainer = generateItemFromList(list);
+            //             if(generatedContainer.name !== null) returnedContainers.push(generatedContainer); 
+            //         }
+            //     }
+            //     return returnedContainers;
+            // }
             
         }
 
         function displayRoom () {
             const orientationBox = document.querySelector('.orientation-box');
             orientationBox.innerHTML = '';
+            const compassRose = document.createElement('div');
+            compassRose.innerText = "+";
+            compassRose.classList.add('compassRose');
+            orientationBox.appendChild(compassRose);
             
             const currentMapRoom = document.getElementById(`area-${currentRoom.row}${currentRoom.column}`);
             console.log("currentMapRoom: ", currentMapRoom);
@@ -357,13 +424,16 @@ function runGame () {
 
         generateDoors();
         // generateRoom();
+        const modifiedContainerList = addRngRangeToList(containers);
+        spawnContainers(rooms, modifiedContainerList);
         document.querySelector('.text-box').innerHTML = generateRoomDescription();
         
 
         displayRoom();
         console.log("rooms: ", rooms);
         // generateItemsFromList(addNullValue(containers, 25));
-        generateItemsFromList(containers);
+        console.log(rooms);
+        // console.log(generateItemFromList(modifiedContainerList));
 
     }
     generateDungeon();

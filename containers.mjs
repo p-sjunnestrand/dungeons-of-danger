@@ -15,6 +15,7 @@ export const containers = [
     },
     {
         name: "storage box",
+        plural: "es",
         size: "large",
         slots: 9,
         weight: 30,
@@ -22,6 +23,7 @@ export const containers = [
     },
     {
         name: "storage box",
+        plural: "es",
         size: "medium",
         slots: 6,
         weight: 40,
