@@ -1,4 +1,6 @@
-import {containers} from './containers.mjs'
+import {containers} from './containers.mjs';
+import { weapons, armor, treasure } from './loot.mjs';
+
 
 
 const gameScreen = document.getElementById('gameScreen');
@@ -21,6 +23,15 @@ playButton.addEventListener('click', () => {
     const mapBox = document.createElement('div');
     mapBox.classList.add('map-box');
     gameScreen.appendChild(mapBox);
+
+    const containerBtnBox = document.createElement('div');
+    containerBtnBox.classList.add('container-button-box');
+    gameScreen.appendChild(containerBtnBox);
+
+    const containerBox = document.createElement('div');
+    containerBox.classList.add('container-box');
+    gameScreen.appendChild(containerBox);
+
     runGame();
 
     // const roomDescription = 
@@ -217,7 +228,7 @@ function runGame () {
         
             function generateItemFromList (list, weight) {
                 const randomInt = getRandomInt(weight, 1);
-                console.log(randomInt);
+                console.log("randomItemInt", randomInt);
                 return list.find(item => item.spawnRngMin <= randomInt && item.spawnRngMax >= randomInt);
             };
 
@@ -228,7 +239,7 @@ function runGame () {
                 for(let i = 0; i < dungeonRooms.length; i++) {
                     console.log(dungeonRooms[i])
                     let currentRoomContainers = [];
-                    for(let j = 0; j < 3; j++) {
+                    for(let j = 0; j < 2; j++) {
                         // if(containersRemaining > 0) {
                             const generatedContainer = generateItemFromList(list, listWeight);
                             if(generatedContainer.name !== null) {
@@ -252,8 +263,49 @@ function runGame () {
                 return `is a ${containers[0].size} ${containers[0].name} and a ${containers[1].size} ${containers[1].name}`;
             }
 
-            function getContainerNames (container) {
-                return 
+            function generateLoot (container) {
+                let currentContainerLoot = [];
+                for(let i = 0; i < container.slots; i++) {
+                    // if(dungeonRooms[i].containers.length > 0) {
+                        let chosenLootList;
+                        let listWeight;
+                        const randomInt = getRandomInt(3);
+                        console.log("random list int: ", randomInt);
+                        switch (randomInt) {
+                            case 0:
+                                chosenLootList = modifiedWeaponList;
+                                listWeight = getTotalWeight(modifiedWeaponList);
+                                break;
+                            case 1:
+                                chosenLootList = modifiedArmorList;
+                                listWeight = getTotalWeight(modifiedArmorList);
+                                break;
+                            case 2:
+                                chosenLootList = modifiedTreasureList;
+                                listWeight = getTotalWeight(modifiedTreasureList);
+                                break;
+                            };
+                        console.log("chosenLootList: ", chosenLootList);
+                        const generatedLoot = generateItemFromList(chosenLootList, listWeight);
+                        console.log("generatedLoot: ", generatedLoot);
+                        if(generatedLoot.name !== null) currentContainerLoot.push(generatedLoot);
+                        // for(let j = 0; j < dungeonRooms[i].containers.length; j++) {
+                            // for(let k = 0; k < dungeonRooms[i].containers[j].length; k++) {
+                            // };
+                        // };
+                    // };
+                };
+                container.loot = currentContainerLoot;
+            };
+
+            function spawnLoot (dungeonRooms) {
+                for(let i = 0; i < dungeonRooms.length; i++) {
+                    if(dungeonRooms[i].containers.length > 0) {
+                        for(let j = 0; j < dungeonRooms[i].containers.length; j++) {
+                            generateLoot(dungeonRooms[i].containers[j]);
+                        }
+                    }
+                }
             }
 
             function generateRoomDescription () {
@@ -370,8 +422,20 @@ function runGame () {
             
         }
 
+        function displayContainerContents (container) {
+            let returnedContents = "";
+            // if(container.loot.length < 1) return;
+            for(let i = 0; i < container.slots; i++) {
+                if(!container.loot[i]) {returnedContents += '<li>-</li>'}
+                else {returnedContents += `<li>${container.loot[i].name}</li>`}
+            };
+            return returnedContents;
+        }
+
         function displayRoom () {
             const orientationBox = document.querySelector('.orientation-box');
+            const containerButtonBox = document.querySelector('.container-button-box');
+            containerButtonBox.innerHTML = '';
             orientationBox.innerHTML = '';
             const compassRose = document.createElement('div');
             compassRose.innerText = "+";
@@ -389,9 +453,9 @@ function runGame () {
                         currentMapRoom.innerText = "E";
                         break;
                     case "stairs":
-                        currentMapRoom.innerText = "S"
-                }
-            }
+                        currentMapRoom.innerText = "S";
+                };
+            };
 
             for(let i = 0; i < currentRoomDoors.length; i++) {
                 const directionalButton = document.createElement('button');
@@ -410,8 +474,32 @@ function runGame () {
 
                     displayRoom();
                 });
-            }  
-        }
+            };
+            
+            if(currentRoom.containers.length > 0) {
+                for(let i = 0; i < currentRoom.containers.length; i++) {
+                    console.log("button i: ", i);
+                    const containerButton = document.createElement('button');
+                    containerButton.innerText = i + 1;
+                    containerButton.classList.add('container-button');
+                    containerButton.id = `container-button-${i + 1}`
+                    containerButtonBox.appendChild(containerButton);
+
+                    containerButton.addEventListener('click', () => {
+                        const containerDisplay = document.createElement('div');
+                        containerDisplay.classList.add('container-display');
+                        containerDisplay.innerHTML = `
+                        <h3>${currentRoom.containers[i].size} ${currentRoom.containers[i].name}</h3>
+                        <ul>
+                            ${displayContainerContents(currentRoom.containers[i])}
+                        </ul>
+                        <button class='close-button' id='closeContainerButton'>X</button>`;
+                        gameScreen.appendChild(containerDisplay);
+                    });
+                };
+
+            };
+        };
         generateStartingPoint();
         
         console.log("length: ", dungeonMap.length - 1);
@@ -425,19 +513,23 @@ function runGame () {
         generateDoors();
         // generateRoom();
         const modifiedContainerList = addRngRangeToList(containers);
+        const modifiedWeaponList = addRngRangeToList(weapons);
+        const modifiedArmorList = addRngRangeToList(armor);
+        const modifiedTreasureList = addRngRangeToList(treasure);
         spawnContainers(rooms, modifiedContainerList);
+        spawnLoot(rooms);
         document.querySelector('.text-box').innerHTML = generateRoomDescription();
         
 
         displayRoom();
         console.log("rooms: ", rooms);
         // generateItemsFromList(addNullValue(containers, 25));
-        console.log(rooms);
+        // console.log(rooms);
         // console.log(generateItemFromList(modifiedContainerList));
 
     }
     generateDungeon();
-}
+};
 
 // const room = generateRoomPosition();
 // console.log(room)

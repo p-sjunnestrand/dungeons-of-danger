@@ -2,14 +2,14 @@ export const containers = [
     {
         name: "chest",
         size: "small",
-        slots: 4,
+        slots: 1,
         weight: 20,
         lockProbability: 1
     },
     {
         name: "chest",
         size: "medium",
-        slots: 6,
+        slots: 2,
         weight: 20,
         lockProbability: 1
     },
@@ -17,7 +17,7 @@ export const containers = [
         name: "storage box",
         plural: "es",
         size: "large",
-        slots: 9,
+        slots: 4,
         weight: 30,
         lockProbability: 1
     },
@@ -25,14 +25,14 @@ export const containers = [
         name: "storage box",
         plural: "es",
         size: "medium",
-        slots: 6,
+        slots: 2,
         weight: 40,
         lockProbability: 1
     },
     {
         name: "barrel",
         size: "medium",
-        slots: 6,
+        slots: 2,
         weight: 30,
         lockProbability: 0
     },
