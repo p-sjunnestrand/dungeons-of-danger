@@ -1,5 +1,6 @@
 import {containers} from './containers.mjs';
 import { weapons, armor, treasure } from './loot.mjs';
+import { displayInventory } from './inventoryHelpers.mjs';
 
 
 
@@ -32,6 +33,10 @@ playButton.addEventListener('click', () => {
     containerBox.classList.add('container-box');
     gameScreen.appendChild(containerBox);
 
+    
+
+    // const containerDisplay
+
     runGame();
 
     // const roomDescription = 
@@ -62,6 +67,7 @@ function runGame () {
     //Player vars
     let playerPosition = [];
     let currentRoom;
+    let inventory = [];
     console.log("player: ", playerPosition)
 
     // function getRandomInt(max) {
@@ -70,6 +76,11 @@ function runGame () {
     // function getRandomArbitrary(max, min = 0) {
     //     return Math.random() * (max - min) + min;
     // }
+    const inventoryButton = document.createElement('button');
+    inventoryButton.innerText = 'inventory';
+    inventoryButton.addEventListener('click', () => displayInventory(inventory, currentRoom));
+    gameScreen.appendChild(inventoryButton);
+
     function getRandomInt(max, min = 0) {
         min = Math.ceil(min);
         max = Math.floor(max);
@@ -109,7 +120,8 @@ function runGame () {
                 column: startingCell,
                 doors: [],
                 type: "entrance",
-                description: [getRoomSize()]
+                description: [getRoomSize()],
+                onFloor: [],
             }
 
             rooms.push(newRoom)
@@ -129,7 +141,8 @@ function runGame () {
                 column: endingCell,
                 doors: [],
                 type: "stairs",
-                description: [getRoomSize()]
+                description: [getRoomSize()],
+                onFloor: [],
             }
             rooms.push(endingRoom);
             console.log(endingRow, endingCell);
@@ -349,6 +362,9 @@ function runGame () {
                 if(currentRoom.type === "stairs") {
                     roomDescription += `</br>There are a set of stairs in the room, leading to the next level.`;
                 }
+                if(currentRoom.onFloor.length > 0) {
+                    roomDescription += "</br><span id='lootOnFloorInfo'>There is some loot on the floor.</span>"
+                }
                 roomDescription += `</p>`
                 return roomDescription;
             }
@@ -399,6 +415,7 @@ function runGame () {
                     doors: [],
                     type: "room",
                     description: [getRoomSize()],
+                    onFloor: [],
                     // containers: []
                 }
 
@@ -427,7 +444,10 @@ function runGame () {
             // if(container.loot.length < 1) return;
             for(let i = 0; i < container.slots; i++) {
                 if(!container.loot[i]) {returnedContents += '<li>-</li>'}
-                else {returnedContents += `<li>${container.loot[i].name}</li>`}
+                else {
+                    returnedContents += `<li>${container.loot[i].name} <button id="takeButton${i}">Take</button></li>`;
+                };
+
             };
             return returnedContents;
         }
@@ -435,12 +455,16 @@ function runGame () {
         function displayRoom () {
             const orientationBox = document.querySelector('.orientation-box');
             const containerButtonBox = document.querySelector('.container-button-box');
+            const containerBox = document.querySelector('.container-box');
             containerButtonBox.innerHTML = '';
             orientationBox.innerHTML = '';
+            containerBox.innerHTML = '';
             const compassRose = document.createElement('div');
             compassRose.innerText = "+";
             compassRose.classList.add('compassRose');
             orientationBox.appendChild(compassRose);
+            // const containerDisplay = document.querySelector('.container-display');
+            // containerDisplay.innerHTML = '';
             
             const currentMapRoom = document.getElementById(`area-${currentRoom.row}${currentRoom.column}`);
             console.log("currentMapRoom: ", currentMapRoom);
@@ -470,7 +494,7 @@ function runGame () {
                     currentMapRoom.classList.remove('current-room')
                     playerPosition = [currentRoom.doors[i][0], currentRoom.doors[i][1]];
                     currentRoomDoors = [];
-                    document.querySelector('.text-box').innerHTML = generateRoomDescription();
+                    document.querySelector('.text-box').innerHTML = generateRoomDescription(); //add floor loot pickup
 
                     displayRoom();
                 });
@@ -478,6 +502,7 @@ function runGame () {
             
             if(currentRoom.containers.length > 0) {
                 for(let i = 0; i < currentRoom.containers.length; i++) {
+                    const currentContainer = currentRoom.containers[i];
                     console.log("button i: ", i);
                     const containerButton = document.createElement('button');
                     containerButton.innerText = i + 1;
@@ -486,15 +511,44 @@ function runGame () {
                     containerButtonBox.appendChild(containerButton);
 
                     containerButton.addEventListener('click', () => {
+                        const openWindow = document.querySelector('.container-display');
+                        if(openWindow) openWindow.remove();
+
                         const containerDisplay = document.createElement('div');
                         containerDisplay.classList.add('container-display');
                         containerDisplay.innerHTML = `
                         <h3>${currentRoom.containers[i].size} ${currentRoom.containers[i].name}</h3>
-                        <ul>
-                            ${displayContainerContents(currentRoom.containers[i])}
+                        <ul id="lootList">
                         </ul>
                         <button class='close-button' id='closeContainerButton'>X</button>`;
-                        gameScreen.appendChild(containerDisplay);
+                        document.querySelector('.container-box').appendChild(containerDisplay);
+                        document.querySelector('.close-button').addEventListener('click', () => {
+                            containerDisplay.remove();
+                        })
+                        for(let j = 0; j < currentContainer.slots; j++) {
+                            if(currentContainer.loot[j]) {
+                                const lootListItem = document.createElement('li');
+                                lootListItem.innerText = currentContainer.loot[j].name;
+                                const lootInfoButton = document.createElement('button');
+                                lootInfoButton.innerText = 'i';
+                                // lootInfoButton.addEventListener
+                                const takeLootButton = document.createElement('button');
+                                takeLootButton.innerText = 'Take';
+                                takeLootButton.id = `takeLootButton${j}`;
+                                takeLootButton.addEventListener('click', () => {
+                                    inventory.push(currentContainer.loot[j]);
+                                    currentContainer.loot.splice(currentContainer.loot[j], 1);
+                                    lootListItem.remove();
+                                    console.log(inventory);
+                                });
+                                lootListItem.append(lootInfoButton, takeLootButton);
+                                document.getElementById('lootList').appendChild(lootListItem);                            }
+                            // else {
+                            //     returnedContents += `<li>${container.loot[i].name} <button id="takeButton${i}">Take</button></li>`;
+                            // };
+            
+                        };
+                        // ${displayContainerContents(currentRoom.containers[i])}
                     });
                 };
 
