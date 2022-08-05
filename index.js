@@ -1,6 +1,7 @@
-import {containers} from './containers.mjs';
+import { containers } from './containers.mjs';
 import { weapons, armor, treasure } from './loot.mjs';
 import { displayInventory } from './inventoryHelpers.mjs';
+import { spawnMobs } from './mobSpawnHelpers.mjs';
 
 
 
@@ -122,6 +123,7 @@ function runGame () {
                 type: "entrance",
                 description: [getRoomSize()],
                 onFloor: [],
+                mobs: [],
             }
 
             rooms.push(newRoom)
@@ -143,6 +145,7 @@ function runGame () {
                 type: "stairs",
                 description: [getRoomSize()],
                 onFloor: [],
+                mobs: [],
             }
             rooms.push(endingRoom);
             console.log(endingRow, endingCell);
@@ -416,6 +419,7 @@ function runGame () {
                     type: "room",
                     description: [getRoomSize()],
                     onFloor: [],
+                    mobs: [],
                     // containers: []
                 }
 
@@ -576,6 +580,7 @@ function runGame () {
         
 
         displayRoom();
+        spawnMobs(currentLevel, rooms);
         console.log("rooms: ", rooms);
         // generateItemsFromList(addNullValue(containers, 25));
         // console.log(rooms);
