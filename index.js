@@ -34,6 +34,9 @@ playButton.addEventListener('click', () => {
     containerBox.classList.add('container-box');
     gameScreen.appendChild(containerBox);
 
+    const encounterBox = document.createElement('div');
+    encounterBox.classList.add('encounter-box');
+    textBox.insertAdjacentElement('afterend', encounterBox);
     
 
     // const containerDisplay
@@ -124,6 +127,7 @@ function runGame () {
                 description: [getRoomSize()],
                 onFloor: [],
                 mobs: [],
+                mobLvls: 0,
             }
 
             rooms.push(newRoom)
@@ -146,6 +150,7 @@ function runGame () {
                 description: [getRoomSize()],
                 onFloor: [],
                 mobs: [],
+                mobLvls: 0,
             }
             rooms.push(endingRoom);
             console.log(endingRow, endingCell);
@@ -420,6 +425,7 @@ function runGame () {
                     description: [getRoomSize()],
                     onFloor: [],
                     mobs: [],
+                    mobLvls: 0,
                     // containers: []
                 }
 
@@ -430,39 +436,20 @@ function runGame () {
             }
             console.log("newDungeonMap: ", dungeonMap);
             
-            // function spawnContainers(list) {
-            //     const returnedContainers = [];
-            //     for(let i = 0; i < 3; i++) {
-            //         if(containersRemaining > 0) {
-            //             const generatedContainer = generateItemFromList(list);
-            //             if(generatedContainer.name !== null) returnedContainers.push(generatedContainer); 
-            //         }
-            //     }
-            //     return returnedContainers;
-            // }
+           
             
         }
 
-        function displayContainerContents (container) {
-            let returnedContents = "";
-            // if(container.loot.length < 1) return;
-            for(let i = 0; i < container.slots; i++) {
-                if(!container.loot[i]) {returnedContents += '<li>-</li>'}
-                else {
-                    returnedContents += `<li>${container.loot[i].name} <button id="takeButton${i}">Take</button></li>`;
-                };
-
-            };
-            return returnedContents;
-        }
 
         function displayRoom () {
             const orientationBox = document.querySelector('.orientation-box');
             const containerButtonBox = document.querySelector('.container-button-box');
             const containerBox = document.querySelector('.container-box');
+            const encounterBox = document.querySelector('.encounter-box');
             containerButtonBox.innerHTML = '';
             orientationBox.innerHTML = '';
             containerBox.innerHTML = '';
+            encounterBox.innerHTML = '';
             const compassRose = document.createElement('div');
             compassRose.innerText = "+";
             compassRose.classList.add('compassRose');
@@ -555,8 +542,17 @@ function runGame () {
                         // ${displayContainerContents(currentRoom.containers[i])}
                     });
                 };
-
             };
+
+            if(currentRoom.mobs.length > 0) {
+                const encounterTextBox = document.createElement('div');
+                encounterTextBox.classList.add('text-box');
+                encounterBox.appendChild(encounterTextBox);
+
+                //In this part, I want a perception vs stealth check to see if the player can make out what kind of monster is present. If so, s/he is given its name, otherwise it just states that a creature is present.
+                const encounterText = `<p>There is a ${currentRoom.mobs[0].name} standing in the room. It is not attacking. What do you do?</p>`;
+                encounterTextBox.insertAdjacentHTML('beforeend', encounterText);
+            }
         };
         generateStartingPoint();
         
@@ -579,8 +575,8 @@ function runGame () {
         document.querySelector('.text-box').innerHTML = generateRoomDescription();
         
 
-        displayRoom();
         spawnMobs(currentLevel, rooms);
+        displayRoom();
         console.log("rooms: ", rooms);
         // generateItemsFromList(addNullValue(containers, 25));
         // console.log(rooms);

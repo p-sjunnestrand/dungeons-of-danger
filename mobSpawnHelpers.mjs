@@ -10,7 +10,7 @@ export function spawnMobs (level, rooms) {
     let currentMobPool = 0;
     const maxMobLvl = level + 1;
     console.log("maxlvl: ", maxMobLvl);
-    const maxMobLvlPerRoom = level + 2;
+    let maxMobLvlPerRoom = level + 2;
 
     const suitableMonsters = mobList.filter(mob => mob.level <= maxMobLvl);
     const totalMonsterWeight = getTotalWeight(suitableMonsters);
@@ -21,13 +21,14 @@ export function spawnMobs (level, rooms) {
     while(currentMobPool < minMobPool) {
         for(let i = 0; i < rooms.length; i++) {
             if(currentMobPool === maxMobPool) return;
-            if(rooms[i].type === "entrance") { //A function that prevents too many monsters to spawn in the same room is needed. Based on maxMobLvlPerRoom.
+            if(rooms[i].type === "entrance" || rooms[i].mobLvls >= maxMobLvlPerRoom) { //A function that prevents too many monsters to spawn in the same room is needed. Based on maxMobLvlPerRoom.
                 continue;
             }
             const spawnedMonster = generateItemFromList(monstersWithRngRange, totalMonsterWeight);
             console.log(spawnedMonster);
             if(spawnedMonster.name === null) continue;
             rooms[i].mobs.push(spawnedMonster);
+            rooms[i].mobLvls += spawnedMonster.level;
             currentMobPool += spawnedMonster.level;
             maxMobLvlPerRoom += spawnedMonster.level;
         }
