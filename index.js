@@ -3,7 +3,7 @@ import { weapons, armor, treasure } from './loot.mjs';
 import { displayInventory } from './inventoryHelpers.mjs';
 import { spawnMobs } from './mobSpawnHelpers.mjs';
 
-
+let numberArray = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
 
 const gameScreen = document.getElementById('gameScreen');
 
@@ -329,6 +329,49 @@ function runGame () {
                 }
             }
 
+            function generateEncounterDescription (mobs, id) {
+                const encounterBox = document.querySelector('.encounter-box');
+                encounterBox.innerHTML = "";
+
+                if(mobs.length === 0) return;
+
+                console.log("room id: ",   id);
+                console.log("mobs in room: ", mobs.length);
+                const encounterTextBox = document.createElement('div');
+                encounterTextBox.classList.add('text-box');
+                encounterBox.appendChild(encounterTextBox);
+
+                //In this part, I want a perception vs stealth check to see if the player can make out what kind of monster is present. If so, s/he is given its name, otherwise it just states that a creature is present.
+                const encounterText = `<p>There ${getMobNumbers(mobs)} standing in the room. ${mobs.length < 2 ? 'It has' : 'They have'} not noticed you. What do you do?</p>`;
+                // const encounterText = "hej"
+                encounterTextBox.insertAdjacentHTML('beforeend', encounterText);
+            
+                function getMobNumbers(mobs) {
+                    
+                    const mobArrayLength = mobs.length;
+                    // const numberOfMobs = numberArray[mobArrayLength];
+                    if(mobArrayLength === 1) return `is a(n) ${mobs[0].name}`; //Change this so that each mob has its own article value? Or make sure all mob names begin with consonant.
+                    const mobCountsObject = {};
+                    mobs.forEach(function (mob) { mobCountsObject[mob.name] = (mobCountsObject[mob.name] || 0) + 1; });
+                    const mobCountsArray = Object.entries(mobCountsObject);
+                    // console.log(counts);
+                    let returnedString = 'are ';
+                    for(let i = 0; i < mobCountsArray.length; i++) {
+                        const numberOfMobs = numberArray[mobCountsArray[i][1]] + 1;
+                        returnedString += `${numberOfMobs} ${mobCountsArray[i][0]}`;
+                        if(i === mobCountsArray.length - 2) {
+                            returnedString += ` and `;
+                        } else {
+                            returnedString += `, `;
+                        }
+                    }
+                    return returnedString;
+                    // for(const [key, value] of Object.entries(mobCountsObject)) {
+                    //     returnedString += `${numberOfMobs} ${key}`;
+                    // }
+                }
+            }
+
             function generateRoomDescription () {
                 currentRoom = rooms.find(room => room.row === playerPosition[0] && room.column === playerPosition[1]);
                 console.log(currentRoom.doors);
@@ -373,6 +416,8 @@ function runGame () {
                 if(currentRoom.onFloor.length > 0) {
                     roomDescription += "</br><span id='lootOnFloorInfo'>There is some loot on the floor.</span>"
                 }
+                // if(currentRoom.mobs.length > 0) {generateEncounterDescription(currentRoom.mobs, currentRoom.id);}
+                
                 roomDescription += `</p>`
                 return roomDescription;
             }
@@ -445,11 +490,10 @@ function runGame () {
             const orientationBox = document.querySelector('.orientation-box');
             const containerButtonBox = document.querySelector('.container-button-box');
             const containerBox = document.querySelector('.container-box');
-            const encounterBox = document.querySelector('.encounter-box');
+            // const encounterBox = document.querySelector('.encounter-box');
             containerButtonBox.innerHTML = '';
             orientationBox.innerHTML = '';
             containerBox.innerHTML = '';
-            encounterBox.innerHTML = '';
             const compassRose = document.createElement('div');
             compassRose.innerText = "+";
             compassRose.classList.add('compassRose');
@@ -486,7 +530,7 @@ function runGame () {
                     playerPosition = [currentRoom.doors[i][0], currentRoom.doors[i][1]];
                     currentRoomDoors = [];
                     document.querySelector('.text-box').innerHTML = generateRoomDescription(); //add floor loot pickup
-
+                    generateEncounterDescription(currentRoom.mobs, currentRoom.id);
                     displayRoom();
                 });
             };
@@ -544,15 +588,7 @@ function runGame () {
                 };
             };
 
-            if(currentRoom.mobs.length > 0) {
-                const encounterTextBox = document.createElement('div');
-                encounterTextBox.classList.add('text-box');
-                encounterBox.appendChild(encounterTextBox);
-
-                //In this part, I want a perception vs stealth check to see if the player can make out what kind of monster is present. If so, s/he is given its name, otherwise it just states that a creature is present.
-                const encounterText = `<p>There is a ${currentRoom.mobs[0].name} standing in the room. It is not attacking. What do you do?</p>`;
-                encounterTextBox.insertAdjacentHTML('beforeend', encounterText);
-            }
+            
         };
         generateStartingPoint();
         
