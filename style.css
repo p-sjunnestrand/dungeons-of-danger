@@ -29,6 +29,7 @@ h1 {
     max-width: 1280px;
     aspect-ratio: 16/9;
     margin-bottom: 2rem;
+    position: relative;
 }
 
 .control-button {
@@ -111,4 +112,26 @@ h1 {
 .container-button {
     width: 50px;
     aspect-ratio: 1/1;
+}
+.overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+.encounter-box {
+    position: relative;
+    z-index: 2;
+}
+.encounter-box div {
+    background-color: white;
+}
+.action-buttons-wrapper {
+    display: flex;
+    justify-content: flex-start;
+    margin: 2rem 1rem;
+    gap: 1rem;
+}
+.action-button {
+    padding: 1rem;
 }

@@ -2,6 +2,7 @@ import { containers } from './containers.mjs';
 import { weapons, armor, treasure } from './loot.mjs';
 import { displayInventory } from './inventoryHelpers.mjs';
 import { spawnMobs } from './mobSpawnHelpers.mjs';
+import { makeOpposingCheck, generateEncounterActions } from './encounterHelpers.mjs';
 
 let numberArray = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
 
@@ -69,6 +70,11 @@ function runGame () {
     
 
     //Player vars
+    let player = {
+        str: 10,
+        dex: 10,
+        int: 10,
+    };
     let playerPosition = [];
     let currentRoom;
     let inventory = [];
@@ -329,11 +335,23 @@ function runGame () {
                 }
             }
 
+            function makeStealthCheck(mobs, playerInt) {
+                let passedCheck = true;
+                mobs.forEach(mob => {
+                    const check = makeOpposingCheck(playerInt, mob.int, getRandomInt);
+                    console.log("check: ", check);
+                    if(!check) passedCheck = false;
+                });
+                return passedCheck;
+            }
             function generateEncounterDescription (mobs, id) {
                 const encounterBox = document.querySelector('.encounter-box');
                 encounterBox.innerHTML = "";
 
                 if(mobs.length === 0) return;
+                const overlay = document.createElement('div');
+                overlay.classList.add('overlay');
+                gameScreen.appendChild(overlay);
 
                 console.log("room id: ",   id);
                 console.log("mobs in room: ", mobs.length);
@@ -341,9 +359,12 @@ function runGame () {
                 encounterTextBox.classList.add('text-box');
                 encounterBox.appendChild(encounterTextBox);
 
+                const stealthCheck = makeStealthCheck(mobs, player.int);
+                console.log("stealthCheck: ", stealthCheck);
                 //In this part, I want a perception vs stealth check to see if the player can make out what kind of monster is present. If so, s/he is given its name, otherwise it just states that a creature is present.
-                const encounterText = `<p>There ${getMobNumbers(mobs)} standing in the room. ${mobs.length < 2 ? 'It has' : 'They have'} not noticed you. What do you do?</p>`;
-                // const encounterText = "hej"
+                let encounterText = `<p>There ${getMobNumbers(mobs)} standing in the room.</p>`;
+                encounterText += generateEncounterActions(stealthCheck, mobs, player);
+                
                 encounterTextBox.insertAdjacentHTML('beforeend', encounterText);
             
                 function getMobNumbers(mobs) {
