@@ -8,7 +8,7 @@ export const mobList = [
         dmgDiceNo: 1,
         str: 8,
         dex: 12,
-        int: 8,
+        int: 20, //8
         con: 8,
         loot: [],
         level: 1,

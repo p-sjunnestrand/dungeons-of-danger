@@ -2,7 +2,7 @@ import { containers } from './containers.mjs';
 import { weapons, armor, treasure } from './loot.mjs';
 import { displayInventory } from './inventoryHelpers.mjs';
 import { spawnMobs } from './mobSpawnHelpers.mjs';
-import { makeOpposingCheck, generateEncounterActions } from './encounterHelpers.mjs';
+import { makeOpposingCheck, generateInitialEncounterActions } from './encounterHelpers.mjs';
 
 let numberArray = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
 
@@ -363,7 +363,9 @@ function runGame () {
                 console.log("stealthCheck: ", stealthCheck);
                 //In this part, I want a perception vs stealth check to see if the player can make out what kind of monster is present. If so, s/he is given its name, otherwise it just states that a creature is present.
                 let encounterText = `<p>There ${getMobNumbers(mobs)} standing in the room.</p>`;
-                encounterText += generateEncounterActions(stealthCheck, mobs, player);
+                
+                const encounterObject = generateInitialEncounterActions(stealthCheck, mobs, player); //This object contains text to be displayed but also detection status and initiative order.
+                encounterText += encounterObject.html;
                 
                 encounterTextBox.insertAdjacentHTML('beforeend', encounterText);
             

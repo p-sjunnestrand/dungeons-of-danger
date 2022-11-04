@@ -34,6 +34,7 @@ export function rollInitiative(playerDex, mobs) {
     let playerWins = true;
     const playerInitiative = makeRoll(playerDex, getRandomInt);
     mobs.forEach(mob => {
+        console.log("mobDex", mob.dex)
         if(makeRoll(mob.dex, getRandomInt) > playerInitiative) playerWins = false; 
     });
 
@@ -41,17 +42,57 @@ export function rollInitiative(playerDex, mobs) {
 
 };
 
-export function generateEncounterActions(check, mobs, player) {
-    let encounterText = "";
-    const singleMob = mobs.length < 2 ? true : false;
+export function generateInitialEncounterActions(check, mobs, player) {
+    let encounterObject = {};
+    const singleMob = mobs.length < 2;
     if(check) {
-        encounterText = `<p>${singleMob ? 'It has' : 'They have'} not noticed you. What do you do?</p>
-                        <div class="action-buttons-wrapper"><button class="action-button" id="sneakButton">Sneak past</button><button class="action-button" id="attackButton">Attack</button></div>`;
+        encounterText = generateUndetectedText(singleMob);
     } else {
-        const initiativeOrder = rollInitiative(player.dex, mobs);
-        encounterText = `<p>${singleMob ? 'It has' : 'They have'} noticed you. ${singleMob ? 'It attacks!' : 'They attack!'}</p>
-        <p>${initiativeOrder ? "You go " : `${singleMob ? "It goes " : "They go "}`}first</p>`
+        encounterText = generateDetectedText(singleMob);
     };
     
-    return encounterText;
+    if(encounterText.detected) {
+        getInitialActionOrder(encounterText, player, mobs, singleMob);
+    } else {
+        encounterText.html += getUndetectedHtml();
+    }
+    
+    return encounterObject;
+};
+
+export function generateUndetectedText(singleMob) {
+    return {
+        html: `<p>${singleMob ? 'It has' : 'They have'} not noticed you. What do you do?</p>`,
+        detected: false
+    };
+}
+
+export function generateDetectedText(singleMob) {
+    return {
+        html: `<p>${singleMob ? 'It has' : 'They have'} noticed you. ${singleMob ? 'It attacks!' : 'They attack!'}</p>`,
+        detected: true
+    }; 
+    // let firstAttacker = noticed + getInitialActionOrder(player, mobs, singleMob);
+    // return firstAttacker;
+}
+
+function getInitialActionOrder(obj, player, mobs, singleMob) {
+    const initiativeOrder = rollInitiative(player.dex, mobs);
+    if(initiativeOrder) {
+        obj.html += "<p>You go first</p>";
+        obj.playerFirst = true; 
+    } 
+    else {
+        obj.html += `<p>${singleMob ? "It goes " : "They go "}first.</p>`,
+        obj.playerFirst = false;
+    }
+
+}
+
+function getUndetectedHtml() {
+    return `<div class="action-buttons-wrapper"><button class="action-button" id="sneakButton">Sneak past</button><button class="action-button" id="attackButton">Attack</button></div>`;
+}
+
+function getDetectedHtml() {
+
 }
