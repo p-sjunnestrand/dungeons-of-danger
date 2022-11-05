@@ -2,7 +2,7 @@ import { containers } from './containers.mjs';
 import { weapons, armor, treasure } from './loot.mjs';
 import { displayInventory } from './inventoryHelpers.mjs';
 import { spawnMobs } from './mobSpawnHelpers.mjs';
-import { makeOpposingCheck, generateInitialEncounterActions } from './encounterHelpers.mjs';
+import { makeOpposingCheck, generateInitialEncounterActions, runBattle } from './encounterHelpers.mjs';
 
 let numberArray = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
 
@@ -357,7 +357,10 @@ function runGame () {
                 console.log("mobs in room: ", mobs.length);
                 const encounterTextBox = document.createElement('div');
                 encounterTextBox.classList.add('text-box');
+                encounterTextBox.id = "encounter-box";
                 encounterBox.appendChild(encounterTextBox);
+                encounterTextBox.insertAdjacentHTML('beforeend', "<div class='encounter-text'></div><div class='action-buttons-wrapper'></div>");
+
 
                 const stealthCheck = makeStealthCheck(mobs, player.int);
                 console.log("stealthCheck: ", stealthCheck);
@@ -367,8 +370,12 @@ function runGame () {
                 const encounterObject = generateInitialEncounterActions(stealthCheck, mobs, player); //This object contains text to be displayed but also detection status and initiative order.
                 encounterText += encounterObject.html;
                 
-                encounterTextBox.insertAdjacentHTML('beforeend', encounterText);
+                const encounterTextWrapper = document.querySelector('.encounter-text');
+                encounterTextWrapper.insertAdjacentHTML('beforeend', encounterText);
             
+                if(encounterObject.detected) {
+                    runBattle(encounterObject.playerFirst)
+                }
                 function getMobNumbers(mobs) {
                     
                     const mobArrayLength = mobs.length;

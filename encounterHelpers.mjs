@@ -1,4 +1,5 @@
 import { getRandomInt } from "./spawnerHelpers.mjs";
+import { actions } from "./actionObject.js";
 
 //All rolls are made with the player as POV: true = player succeeds, false = player fails.
 
@@ -46,15 +47,15 @@ export function generateInitialEncounterActions(check, mobs, player) {
     let encounterObject = {};
     const singleMob = mobs.length < 2;
     if(check) {
-        encounterText = generateUndetectedText(singleMob);
+        encounterObject = generateUndetectedText(singleMob);
     } else {
-        encounterText = generateDetectedText(singleMob);
+        encounterObject = generateDetectedText(singleMob);
     };
     
-    if(encounterText.detected) {
-        getInitialActionOrder(encounterText, player, mobs, singleMob);
+    if(encounterObject.detected) {
+        getInitialActionOrder(encounterObject, player, mobs, singleMob);
     } else {
-        encounterText.html += getUndetectedHtml();
+        encounterObject.buttons = getUndetectedHtml();
     }
     
     return encounterObject;
@@ -90,9 +91,32 @@ function getInitialActionOrder(obj, player, mobs, singleMob) {
 }
 
 function getUndetectedHtml() {
-    return `<div class="action-buttons-wrapper"><button class="action-button" id="sneakButton">Sneak past</button><button class="action-button" id="attackButton">Attack</button></div>`;
+    return `<button class="action-button" id="sneakButton">Sneak past</button><button class="action-button" id="attackButton">Attack</button>`;
 }
 
-function getDetectedHtml() {
+export function runBattle(playerFirst, player, mobs) {
+    console.log("player first?", playerFirst)
+    if(playerFirst) {
+        const encounterBox = document.querySelector('.action-buttons-wrapper');
+        console.log(encounterBox)
+        const battleHtml = generateBattleHtml();
+        encounterBox.insertAdjacentHTML('beforeend', battleHtml);
+        bindActionButtons();
+        // run player turn
+    };
+    // run mob turn
+}
 
+function generateBattleHtml() {
+    return `<button class="action-button" id="healButton">Heal</button>
+            <button class="action-button" id="attackButton">Attack</button>
+            <button class="action-button" id="spellButton">Cast Spell</button>
+            <button class="action-button" id="retreatButton">Retreat</button>`;
+}
+
+function bindActionButtons() {
+    document.getElementById('healButton').addEventListener('click', actions.heal());
+    document.getElementById('attackButton').addEventListener('click', actions.attack());
+    document.getElementById('spellButton').addEventListener('click', actions.castSpell());
+    document.getElementById('retreatButton').addEventListener('click', actions.retreat());
 }
